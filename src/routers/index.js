@@ -20,6 +20,8 @@ const setupRouters = (app) => {
 const setupCrons = () => {
   // Cleanup
   const cleanupCron = require('../modules/cron/cleanup.cron');
+  // Auto-fetch films daily
+  const autoFetchCron = require('../modules/cron/auto-fetch.cron');
 }
 
 module.exports = { setupRouters, setupCrons }

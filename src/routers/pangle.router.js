@@ -27,4 +27,15 @@ router.post('/list', async (req, res, next) => {
   }
 });
 
+// Manual trigger for auto-fetch (for testing/admin purposes)
+router.post('/auto-fetch', async (req, res, next) => {
+  try {
+    const autoFetchCron = require('../modules/cron/auto-fetch.cron');
+    const result = await autoFetchCron.triggerAutoFetch();
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

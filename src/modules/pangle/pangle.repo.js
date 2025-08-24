@@ -6,7 +6,7 @@ class PangleRepository {
     try {
       const film = await Pangle
         .findOne({ file_id: fileId })
-        .select('title desc cover_image lang voice_lang categories')
+        .select('title desc cover_image lang voice_lang categories created_at')
         .lean();
       if (!film) return null;
       return film;
@@ -43,7 +43,7 @@ class PangleRepository {
     return Promise.all([
       Pangle
         .find(query)
-        .select('file_id shortplay_id title desc cover_image lang voice_lang categories')
+        .select('file_id shortplay_id title desc cover_image lang voice_lang categories created_at')
         .sort({ created_at: -1 }) // Sort by created_at in descending order (most recent first)
         .skip(skip)
         .limit(pageSize)

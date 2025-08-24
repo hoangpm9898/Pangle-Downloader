@@ -244,6 +244,26 @@ body {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+.filter-select:hover {
+    border-color: var(--accent-color);
+    background: var(--accent-bg);
+}
+
+/* Active filter indicator */
+.filter-select.active {
+    border-color: var(--accent-color);
+    background: var(--accent-bg);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Filter controls container improvements */
+.filter-controls {
+    background: var(--secondary-bg);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
 .btn-primary {
     background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
     border: none;
@@ -341,6 +361,38 @@ body {
 .film-meta span {
     font-size: var(--font-size-sm);
     color: var(--secondary-text);
+}
+
+/* NEW Film Badge */
+.new-badge {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    background: var(--success-color);
+    color: white;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    z-index: 10;
+    animation: pulse 2s infinite;
+}
+
+.new-film {
+    border-color: var(--success-color);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* History Table */
