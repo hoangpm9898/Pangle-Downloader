@@ -1,0 +1,113 @@
+
+.main-container {
+    max-width: 1700px;
+}
+
+.header-content {
+    max-width: 1700px;
+}
+
+.sidebar {
+    width: 15%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    top: 105px;
+    max-height: 785px;
+}
+
+.content {
+    width: 85%;
+}
+
+.nav-item {
+    height: 10px;
+}
+
+.logo h1 {
+    font-weight: 300;
+}
+
+.btn-primary {
+    font-weight: 700;
+    justify-content: center;
+}
+#filterBtn {
+    width: 130px;
+}
+#fetchBtn {
+    width: 185px;
+    background: linear-gradient(135deg, #483bf6, #3225eb);
+}
+
+.film-poster {
+    width: 242px;
+}
+
+/* #filmsView > div > div.film-info > div.film-meta > span > i {
+    margin-right: 5px;
+} */
+
+div.notification > div {
+    margin-right: 14px;
+}
+
+.status-waiting, .status-active, .status-delayed, .status-paused {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning-color);
+    border: 1px solid var(--warning-color);
+}
+.status-completed {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
+}
+.status-failed {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--error-color);
+    border: 1px solid var(--error-color);
+}
+
+/* .history-table-header, .history-row {
+    grid-template-columns: 2fr 1fr 0.75fr 1fr 0.5fr 1fr;
+} */
+.history-table-header, .history-row {
+    grid-template-columns: 1fr 1.25fr 2fr 1fr 1fr;
+}
+
+.history-group-header {
+    background: linear-gradient(150deg, darkslateblue, var(--secondary-bg));
+}
+
+/*  */
+.download-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--accent-color);
+    color: #ffffff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.download-icon:hover {
+    background-color: var(--accent-hover);
+    transform: scale(1.1) rotate(10deg);
+}
+.download-icon i {
+    font-size: 20px;
+}
+
+.history-group-header > .fa-film {
+    color: darkgray;
+    margin-right: 5px;
+}
+.history-group-header > .fa-closed-captioning {
+    color: darkgray;
+    margin-left: 30px;
+    margin-right: 5px;
+}

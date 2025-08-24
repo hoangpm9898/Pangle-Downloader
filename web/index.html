@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pangle Films Management</title>
+    <link rel="icon" href="D:\Projects\Pangle-downloader\web\images/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="D:\Projects\Pangle-downloader\web\css/styles.css">
+    <link rel="stylesheet" href="D:\Projects\Pangle-downloader\web\css/fix.css">
+    <script src="D:\Projects\Pangle-downloader\web\js/client-management.js"></script>
+    <script src="D:\Projects\Pangle-downloader\web\js/helper.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <h1>PANGLE SHORT FILMS MANAGEMENT</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" id="notifications">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="btn-icon" id="settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+
+        <!-- Menu Navigation -->
+        <nav class="sidebar">
+            <ul class="nav-menu">
+                <li class="nav-item active" data-section="films">
+                    <i class="fas fa-video"></i>
+                    <span>Short Films</span>
+                </li>
+                <li class="nav-item" data-section="history">
+                    <i class="fas fa-history"></i>
+                    <span>Download History</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Content Area -->
+        <main class="content">
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search films...">
+                </div>
+                
+                <div class="filter-controls">
+                    <select id="categoryFilter" class="filter-select"></select>
+                    <select id="subLanguageFilter" class="filter-select"></select>
+                    <select id="voiceLanguageFilter" class="filter-select"></select>
+                    <button id="filterBtn" class="btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                    <button id="fetchBtn" class="btn-primary"><i class="fas fa-cloud-download"></i> Fetch New Films</button>
+                </div>
+            </div>
+
+            <!-- Data Section -->
+            <div class="data-section">
+                <!-- Films Grid View -->
+                <div id="filmsView" class="films-grid">
+                    <!-- Film blocks will be dynamically generated here -->
+                </div>
+
+                <!-- History Table View -->
+                <div id="historyView" class="history-table" style="display: none;">
+                    <!-- History tables will be dynamically generated here -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <button class="btn-page" id="prevPage">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="page-numbers" id="pageNumbers">
+                        <!-- Page numbers will be dynamically generated -->
+                    </div>
+                    <button class="btn-page" id="nextPage">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Film Detail Popup -->
+    <div id="filmDetailPopup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h2 id="filmTitle">Film Title</h2>
+                <button class="btn-close" id="closePopup">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="popup-body">
+                <div class="film-poster">
+                    <img id="filmPoster" src="" alt="Film Poster">
+                </div>
+                <div class="film-info">
+                    <div class="info-row">
+                        <label>Category:</label>
+                        <span id="filmCategory"></span>
+                    </div>
+                    <div class="info-row">
+                        <label>Sub Language:</label>
+                        <span id="filmSubLanguage"></span>
+                    </div>
+                    <div class="info-row">
+                        <label>Voice Language:</label>
+                        <span id="filmVoiceLanguage"></span>
+                    </div>
+                    <!-- <div class="info-row">
+                        <label>Episodes:</label>
+                        <span id="filmEpisodes"></span>
+                    </div> -->
+                    <div class="info-row">
+                        <label>Description:</label>
+                        <p id="filmDescription"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="popup-footer">
+                <div class="episodes-list" id="episodesList">
+                    <!-- Episodes will be dynamically generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="D:\Projects\Pangle-downloader\web\js/app.js"></script>
+    <script src="D:\Projects\Pangle-downloader\web\js/refresh.js"></script>
+    <script src="D:\Projects\Pangle-downloader\web\js/api.js"></script>
+  </body>
+</html>
+
