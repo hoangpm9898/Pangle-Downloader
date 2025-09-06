@@ -59,6 +59,9 @@ function setupEventListeners() {
     subLanguageFilter.addEventListener('change', handleAutoFilter);
     voiceLanguageFilter.addEventListener('change', handleAutoFilter);
 
+    // New Films button
+    document.getElementById('checkNewFilmsBtn').addEventListener('click', handleCheckNewFilms);
+
     // Popup
     closePopup.addEventListener('click', closeFilmDetailPopup);
     filmDetailPopup.addEventListener('click', function(e) {
@@ -144,6 +147,51 @@ async function switchView(view) {
 
 // Films page
 // --------------------------------------------------------------
+
+async function handleCheckNewFilms() {
+    const button = document.getElementById('checkNewFilmsBtn');
+    const originalText = button.innerHTML;
+    
+    try {
+        // Show loading state
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        button.disabled = true;
+        
+        const deviceId = getClientId();
+        console.log('Checking new films for device:', deviceId);
+        
+        const result = await getNewFilms(deviceId);
+        
+        if (result.success) {
+            if (result.data.length > 0) {
+                showNotification(`Found ${result.data.length} new films! Process ID: ${result.processId}`, 'success');
+                
+                // Optional: Display the new films in the current view
+                filteredFilms = { 
+                    success: true, 
+                    data: result.data, 
+                    pagination: { page: 1, page_size: result.data.length, total: result.data.length, total_page: 1 }
+                };
+                await renderFilmsView();
+                updatePagination();
+                
+                console.log('New films data:', result.data);
+            } else {
+                showNotification(result.message || 'No new films available', 'info');
+            }
+        } else {
+            showNotification(`Error: ${result.message}`, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error checking new films:', error);
+        showNotification(`Error checking new films: ${error.message}`, 'error');
+    } finally {
+        // Restore button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
 
 async function handleSearchAndFilter() {
     if (currentView === 'films') {
@@ -253,7 +301,7 @@ async function renderFilmsView(newFilms=[]) {
                     <div class="film-title">${film.title}</div>
                     <div class="film-meta">
                         <span><i class="fas fa-tag"></i> ${capitalizeFirst(film.categories[0].name)}</span>
-                        <span><i class="fas fa-closed-captioning"></i> ${getLanguageFullName(film.lang)}</span>
+                        <span><i class="fas fa-closed-captioning"></i> ${getLanguageFullName(film.title)}</span>
                         <span><i class="fas fa-volume-up"></i> ${getLanguageFullName(film.voice_lang)}</span>
                     </div>
                 </div>

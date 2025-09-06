@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 
 const PangleService = require('../pangle/pangle.service');
+const NewFilmsService = require('../new-films/new-films.service');
 
 class AutoFetchCron {
 
@@ -34,6 +35,7 @@ class AutoFetchCron {
       const voiceLanguages = ['vi', 'en', 'zh-CN', 'zh-TW']; // Same for voice languages
       
       let totalFetched = 0;
+      let allNewFilms = []; // Collect all new films
       
       // Fetch films for each combination of category, sub language, and voice language
       for (const category of categories) {
@@ -54,6 +56,8 @@ class AutoFetchCron {
               
               if (result.success && result.data && result.data.length > 0) {
                 totalFetched += result.data.length;
+                // Collect films for new films processing
+                allNewFilms.push(...result.data);
                 console.log(`[!] - Fetched ${result.data.length} films for category ${category.name}`);
               }
               
@@ -66,6 +70,17 @@ class AutoFetchCron {
               continue;
             }
           }
+        }
+      }
+      
+      // Save all new films to the NewFilms collection and manage view history
+      if (allNewFilms.length > 0) {
+        console.log(`\n[!] Processing ${allNewFilms.length} total new films...`);
+        const saveResult = await NewFilmsService.saveNewFilms(allNewFilms);
+        if (saveResult.success) {
+          console.log(`[!] - Successfully saved ${saveResult.count} new films for process ${saveResult.processId}`);
+        } else {
+          console.error(`[x] - Error saving new films: ${saveResult.error}`);
         }
       }
       

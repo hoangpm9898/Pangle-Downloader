@@ -1,6 +1,7 @@
 
 const pangleRouter = require('./pangle.router');
 const downloadRouter = require('./download.router');
+const newFilmsRouter = require('./new-films.router');
 
 // Timeout config
 const setRouteTimeout = (req, res, next) => {
@@ -14,6 +15,7 @@ const setRouteTimeout = (req, res, next) => {
 const setupRouters = (app) => {
   app.use('/api/v1/pangle', pangleRouter);
   app.use('/api/v1/download', downloadRouter);
+  app.use('/api/v1/new-films', newFilmsRouter);
 }
 
 // Crons
