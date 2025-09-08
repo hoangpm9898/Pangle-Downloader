@@ -51,7 +51,7 @@ class PangleService {
         controller: { 
           category_ids: filters.category_ids,
           lang: filters.langs,
-          vioce_lang: filters.voice_langs,
+          voice_lang: filters.voice_langs,
           title: filters.title,
         }
       });

@@ -14,8 +14,8 @@ const searchInput = document.getElementById('searchInput');
 const categoryFilter = document.getElementById('categoryFilter');
 const subLanguageFilter = document.getElementById('subLanguageFilter');
 const voiceLanguageFilter = document.getElementById('voiceLanguageFilter');
-const filterBtn = document.getElementById('filterBtn');
-const fetchBtn = document.getElementById('fetchBtn');
+// const filterBtn = document.getElementById('filterBtn');
+// const fetchBtn = document.getElementById('fetchBtn');
 const pagination = document.getElementById('pagination');
 const filmDetailPopup = document.getElementById('filmDetailPopup');
 const closePopup = document.getElementById('closePopup');
@@ -38,6 +38,9 @@ async function initializeApp() {
     // Render list films...
     await renderFilmsView();
     updatePagination();
+    
+    // Setup auto-refresh to check for new films every 30 minutes
+    setupAutoRefresh();
 }
 
 function setupEventListeners() {
@@ -50,10 +53,14 @@ function setupEventListeners() {
         });
     });
 
-    // Search, Filters, Fetching films...
-    searchInput.addEventListener('input', debounce(handleSearch, 300));
-    filterBtn.addEventListener('click', handleFilter);
-    fetchBtn.addEventListener('click', handleFetch);
+    // Search and auto-filters...
+    searchInput.addEventListener('input', debounce(handleSearchAndFilter, 300));
+    categoryFilter.addEventListener('change', handleAutoFilter);
+    subLanguageFilter.addEventListener('change', handleAutoFilter);
+    voiceLanguageFilter.addEventListener('change', handleAutoFilter);
+
+    // New Films button
+    document.getElementById('checkNewFilmsBtn').addEventListener('click', handleCheckNewFilms);
 
     // Popup
     closePopup.addEventListener('click', closeFilmDetailPopup);
@@ -141,43 +148,85 @@ async function switchView(view) {
 // Films page
 // --------------------------------------------------------------
 
-async function handleSearch() {
-
-    let searched = [];
-    const searchTerm = searchInput.value.toLowerCase().trim();
+async function handleCheckNewFilms() {
+    const button = document.getElementById('checkNewFilmsBtn');
+    const originalText = button.innerHTML;
     
+    try {
+        // Show loading state
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        button.disabled = true;
+        
+        const deviceId = getClientId();
+        console.log('Checking new films for device:', deviceId);
+        
+        const result = await getNewFilms(deviceId);
+        
+        if (result.success) {
+            if (result.data.length > 0) {
+                showNotification(`Found ${result.data.length} new films! Process ID: ${result.processId}`, 'success');
+                
+                // Optional: Display the new films in the current view
+                filteredFilms = { 
+                    success: true, 
+                    data: result.data, 
+                    pagination: { page: 1, page_size: result.data.length, total: result.data.length, total_page: 1 }
+                };
+                await renderFilmsView();
+                updatePagination();
+                
+                console.log('New films data:', result.data);
+            } else {
+                showNotification(result.message || 'No new films available', 'info');
+            }
+        } else {
+            showNotification(`Error: ${result.message}`, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error checking new films:', error);
+        showNotification(`Error checking new films: ${error.message}`, 'error');
+    } finally {
+        // Restore button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+async function handleSearchAndFilter() {
     if (currentView === 'films') {
-        searched = filteredFilms.data.filter(film => 
-            film.title.toLowerCase().includes(searchTerm)
-        ) || [];
-        console.log(`Result for search term '${searchTerm}': ${searched.length} films`);
-        await renderFilmsView(searched);
-    } 
-    else if (currentView === 'history') {
-        searched = filteredHistory.filter(item =>
+        // For films view, use the unified filter function
+        applyFilters();
+    } else if (currentView === 'history') {
+        // For history view, use simple search
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const searched = filteredHistory.filter(item =>
             item.filmName.toLowerCase().includes(searchTerm)
         ) || [];
         console.log(`Result for search term '${searchTerm}': ${searched.length} jobs`);
         await renderHistoryView(searched);
+        currentPage = 1;
+        updatePagination(searched.length);
     }
-    currentPage = 1;
-    updatePagination(searched.length);
 }
 
-function handleFilter() {
+// Auto-filter function with debouncing for better performance
+const handleAutoFilter = debounce(function() {
+    applyFilters();
+}, 200);
 
+function applyFilters() {
     const categoryId = Number(categoryFilter.value);
     const subLanguage = subLanguageFilter.value;
     const voiceLanguage = voiceLanguageFilter.value;
     const searchTerm = searchInput.value.toLowerCase().trim();
 
-    console.log('Filter with category:', categoryId);
-    console.log('Filter with sub language:', subLanguage);
-    console.log('Filter with voic language:', voiceLanguage);
-    console.log('Filter with search term:', searchTerm);
+    console.log('Auto-filtering with:', { categoryId, subLanguage, voiceLanguage, searchTerm });
+    
+    // Update visual indicators for active filters
+    updateFilterVisualStates(categoryId, subLanguage, voiceLanguage);
     
     const filtered = filteredFilms.data.filter(film => {
-
         const matchesSearch = !searchTerm || searchTerm==='' || film.title.toLowerCase().includes(searchTerm);
         const matchesCategory = !categoryId || categoryId===0 || film.categories.map(c => c.id).includes(categoryId);
         const matchesSubLanguage = !subLanguage || subLanguage==='' || film.lang === subLanguage;
@@ -185,52 +234,45 @@ function handleFilter() {
 
         return matchesSearch && matchesCategory && matchesSubLanguage && matchesVoiceLanguage;
     }) || [];
-    console.log('---> Filter has result:', filtered.length, 'films');
+    
+    console.log('---> Auto-filter result:', filtered.length, 'films');
 
-    showNotification(`${filtered.length} films filtered!`, 'success');
+    // Only show notification if filters are actually applied (not default state)
+    const hasActiveFilters = categoryId !== 0 || subLanguage !== '' || voiceLanguage !== '' || searchTerm !== '';
+    if (hasActiveFilters) {
+        showNotification(`${filtered.length} films found`, 'info');
+    }
 
     currentPage = 1;
     renderFilmsView(filtered);
     updatePagination(filtered.length);
 }
 
-async function handleFetch() {
-
-    const categoryId = Number(categoryFilter.value);
-    const subLanguage = subLanguageFilter.value;
-    const voiceLanguage = voiceLanguageFilter.value;
-    const searchTerm = searchInput.value.toLowerCase().trim();
-
-    console.log('Fetch with category:', categoryId);
-    console.log('Fetch with sub language:', subLanguage);
-    console.log('Fetch with voic language:', voiceLanguage);
-    console.log('Fetch with search term:', searchTerm);
-
-    // if (categoryId===0) {
-    //   showNotification(`Please select a category!`, 'warning');
-    //   return;
-    // }
-    showNotification(`Fetching ...`, 'info');
-
-    // Fetch new list films...
-    const res = await fetchPangleData('pangle', categoryId, subLanguage, voiceLanguage, searchTerm) || [];
-    if (!res.success) {
-      showNotification(`Fetch empty films: ${res.message}`, 'error');
-      return;
+// Update visual states for active filters
+function updateFilterVisualStates(categoryId, subLanguage, voiceLanguage) {
+    // Update category filter visual state
+    if (categoryId && categoryId !== 0) {
+        categoryFilter.classList.add('active');
+    } else {
+        categoryFilter.classList.remove('active');
     }
-    // Get list new films from DB...
-    filteredFilms = await fetchPangleData('db',undefined,undefined,undefined,undefined);
-    
-    // Refresh DOM...
-    await refreshFilmData();
 
-    console.log('---> Fetch has result:', filteredFilms.data.length, 'films');
+    // Update sub language filter visual state
+    if (subLanguage && subLanguage !== '') {
+        subLanguageFilter.classList.add('active');
+    } else {
+        subLanguageFilter.classList.remove('active');
+    }
 
-    showNotification(`${filteredFilms.data.length} films fetched!`, 'success');
-
-    currentPage = 1;
-    updatePagination();
+    // Update voice language filter visual state
+    if (voiceLanguage && voiceLanguage !== '') {
+        voiceLanguageFilter.classList.add('active');
+    } else {
+        voiceLanguageFilter.classList.remove('active');
+    }
 }
+
+
 
 async function renderFilmsView(newFilms=[]) {
     
@@ -239,13 +281,19 @@ async function renderFilmsView(newFilms=[]) {
     const filmsToShow = (newFilms.length > 0) ? newFilms.slice(startIndex, endIndex) : filteredFilms.data.slice(startIndex, endIndex);
 
     if (filmsToShow.length === 0) {
-        filmsView.innerHTML = '<div class="text-center text-muted" style="grid-column: 1/-1; padding: 2rem;">😈 No short films found. Please fetching!</div>';
+        filmsView.innerHTML = '<div class="text-center text-muted" style="grid-column: 1/-1; padding: 2rem;">😈 No short films found. New films are automatically fetched daily!</div>';
         return;
     }
 
     filmsView.innerHTML = await Promise.all(
-        filmsToShow.map(async (film) => `
-            <div class="film-card">
+        filmsToShow.map(async (film) => {
+            // Check if film is new (created within last 24 hours)
+            const isNew = film.created_at ? isFilmNew(film.created_at) : false;
+            const newBadge = isNew ? '<div class="new-badge">NEW</div>' : '';
+            
+            return `
+            <div class="film-card ${isNew ? 'new-film' : ''}">
+                ${newBadge}
                 <div class="film-poster">
                     <img src="${film.cover_image}" alt="${film.title}" onerror='this.style.display="none"; this.parentElement.innerHTML="<i class=\"fas fa-film\"></i>";'>
                 </div>
@@ -253,7 +301,7 @@ async function renderFilmsView(newFilms=[]) {
                     <div class="film-title">${film.title}</div>
                     <div class="film-meta">
                         <span><i class="fas fa-tag"></i> ${capitalizeFirst(film.categories[0].name)}</span>
-                        <span><i class="fas fa-closed-captioning"></i> ${getLanguageFullName(film.lang)}</span>
+                        <span><i class="fas fa-closed-captioning"></i> ${getLanguageFullName(film.title)}</span>
                         <span><i class="fas fa-volume-up"></i> ${getLanguageFullName(film.voice_lang)}</span>
                     </div>
                 </div>
@@ -261,7 +309,8 @@ async function renderFilmsView(newFilms=[]) {
                     <i class="fas fa-download"></i>
                 </div>
             </div>
-        `)
+        `;
+        })
     ).then(results => results.join(''));
 }
 
@@ -678,6 +727,57 @@ function getNotificationIcon(type) {
         case 'error': return 'exclamation-circle';
         case 'warning': return 'exclamation-triangle';
         default: return 'info-circle';
+    }
+}
+
+// Helper Functions
+// --------------------------------------------------------------
+
+function isFilmNew(createdAt) {
+    if (!createdAt) return false;
+    
+    const filmDate = new Date(createdAt);
+    const now = new Date();
+    const diffInHours = Math.abs(now - filmDate) / (1000 * 60 * 60);
+    
+    // Consider film as "new" if created within last 24 hours
+    return diffInHours <= 24;
+}
+
+// Auto-refresh functionality
+// --------------------------------------------------------------
+
+function setupAutoRefresh() {
+    // Check for new films every 30 minutes
+    setInterval(async () => {
+        await checkForNewFilms();
+    }, 30 * 60 * 1000); // 30 minutes
+}
+
+async function checkForNewFilms() {
+    try {
+        const currentFilmCount = filteredFilms.data.length;
+        
+        // Fetch fresh data from DB
+        const freshData = await fetchPangleData('db',undefined,undefined,undefined,undefined);
+        
+        if (freshData && freshData.data && freshData.data.length > currentFilmCount) {
+            const newFilmsCount = freshData.data.length - currentFilmCount;
+            
+            // Update the global data
+            filteredFilms = freshData;
+            
+            // Only refresh view if user is on films page
+            if (currentView === 'films') {
+                await renderFilmsView();
+                updatePagination();
+            }
+            
+            // Show notification about new films
+            showNotification(`${newFilmsCount} new films available! Auto-refreshed.`, 'success');
+        }
+    } catch (error) {
+        console.error('Error checking for new films:', error);
     }
 }
 

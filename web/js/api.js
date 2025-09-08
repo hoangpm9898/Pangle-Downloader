@@ -68,6 +68,75 @@ async function fetchPangleData(getFrom, categoryId, subLang, voiceLang, titleTex
 /** ------------------------------------------------------------------------ **/ 
 /** ------------------------------------------------------------------------ **/ 
 
+async function getNewFilms(deviceId) {
+    try {
+        const url = `${API_HOST}/api/v1/new-films/list?device_id=${encodeURIComponent(deviceId)}`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Get new films result:', data);
+        
+        if (data.success) {
+            return {
+                success: true,
+                data: data.data || [],
+                message: data.message,
+                processId: data.processId
+            };
+        } else {
+            return {
+                success: false,
+                message: data.message,
+                data: []
+            };
+        }
+    } catch (error) {
+        console.error('Get new films fail:', error.message);
+        return {
+            success: false,
+            message: error.message,
+            data: []
+        };
+    }
+}
+
+async function getNewFilmsStatistics() {
+    try {
+        const url = `${API_HOST}/api/v1/new-films/statistics`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Get new films statistics fail:', error.message);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+/** ------------------------------------------------------------------------ **/ 
+/** ------------------------------------------------------------------------ **/ 
+
 async function downloadFilmEsipose(filmId, episodeIdx) {
 
     const url = `${API_HOST}/api/v1/download/?clientId=${getClientId()}&filmId=${filmId}&episodeIdx=${episodeIdx}`;
